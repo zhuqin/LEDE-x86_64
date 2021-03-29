@@ -88,7 +88,13 @@ jobs:
         cd openwrt && rm -rf package/litte/naiveproxy && rm -rf package/lean/v2ray
         cp -f package/litte/default-settings package/lean/default-settings/files/zzz-default-settings
         cp -f package/litte/banner package/base-files/files/etc/banner
-        cp -f package/litte/Leandiffconfig .config && make defconfig
+        cp -f package/litte/Leandiffconfig .config
+        echo "CONFIG_PACKAGE_luci-app-jd-dailybonus=y" >> .config
+        echo "CONFIG_PACKAGE_vlmcsd=y" >> .config
+        echo "CONFIG_PACKAGE_luci-app-vlmcsd=y" >> .config
+        echo "CONFIG_PACKAGE_UnblockNeteaseMusicGo=y" >> .config
+        echo "CONFIG_PACKAGE_luci-app-unblockmusic=y" >> .config
+        make defconfig
         git pull && ./scripts/feeds update -a
         ./scripts/feeds install -a
         
