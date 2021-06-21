@@ -75,7 +75,7 @@ jobs:
     - name: 自定义安装源
       working-directory: ./openwrt
       run: |
-        git clone https://github.com/kenzok8/small package/small
+        git clone https://github.com/xiaorouji/openwrt-passwall package/passwall
         git clone https://github.com/kenzok8/litte package/litte     
 
     - name: 自定义配置文件Lean
@@ -94,7 +94,7 @@ jobs:
         echo "CONFIG_PACKAGE_UnblockNeteaseMusicGo=y" >> .config
         echo "CONFIG_PACKAGE_luci-app-unblockmusic=y" >> .config
         make defconfig
-        git pull && ./scripts/feeds update -a
+        ./scripts/feeds update -a
         ./scripts/feeds install -a
         
     - name: 下载包文件
