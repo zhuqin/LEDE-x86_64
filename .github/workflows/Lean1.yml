@@ -22,7 +22,7 @@ on:
 
 jobs:
   build:
-    runs-on: Ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
     - name: 检查
@@ -52,7 +52,7 @@ jobs:
           mysql* \
           php*
         sudo -E apt-get update
-        sudo -E apt-get -y install build-essential asciidoc binutils bzip2 gawk gettext git libncurses5-dev patch python3 python2.7 unzip zlib1g-dev lib32gcc1 libc6-dev-i386 subversion flex node-uglify git gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx-ucl libelf-dev autoconf automake libtool autopoint device-tree-compiler g++-multilib antlr3 gperf wget curl swig rsync rename
+        sudo -E apt-get -y install build-essential asciidoc binutils bzip2 gawk gettext git libncurses5-dev patch python3 python2.7 unzip zlib1g-dev lib32gcc1 libc6-dev-i386 subversion flex node-uglify git gcc-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx-ucl libelf-dev autoconf automake libtool autopoint device-tree-compiler g++-multilib antlr3 gperf wget curl swig rsync
         sudo -E apt-get -y autoremove --purge
         sudo -E apt-get clean
 
@@ -64,7 +64,7 @@ jobs:
       run: |
         git clone --depth 1 $REPO_URL -b $REPO_BRANCH openwrt
         cd openwrt
-        sed -i '5s/#//' feeds.conf.default
+        echo "src-git ssrp https://github.com/fw876/helloworld.git" >> ./feeds.conf.default
         
     - name: 更新 & 安装 feeds
       working-directory: ./openwrt
@@ -75,7 +75,7 @@ jobs:
     - name: 自定义安装源
       working-directory: ./openwrt
       run: |
-        git clone https://github.com/xiaorouji/openwrt-passwall package/passwall
+        git clone https://github.com/kenzok8/small package/small
         git clone https://github.com/kenzok8/litte package/litte     
 
     - name: 自定义配置文件Lean
@@ -107,8 +107,8 @@ jobs:
     - name: 编译固件
       working-directory: ./openwrt
       run: |
-        echo -e "$(nproc) thread build."
-        make -j$(nproc) V=s
+        echo -e "$(($(nproc)+1)) thread compile"
+        make -j$(($(nproc)+1)) || make -j1 V=s
      
 
     - name : 上传固件
