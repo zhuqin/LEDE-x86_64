@@ -88,7 +88,7 @@ jobs:
         cp -f package/litte/commit/default-settings package/lean/default-settings/files/zzz-default-settings
         cp -f package/litte/commit/banner package/base-files/files/etc/banner
         cp -f package/litte/commit/Leandiffconfig .config
-        # echo "CONFIG_PACKAGE_luci-app-jd-dailybonus=y" >> .config
+        echo "CONFIG_PACKAGE_luci-app-jd-dailybonus=y" >> .config
         echo "CONFIG_PACKAGE_luci-app-vlmcsd=y" >> .config
         echo "CONFIG_PACKAGE_luci-app-unblockmusic=y" >> .config
         make defconfig
