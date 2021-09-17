@@ -7,9 +7,13 @@
 name: Lean_5.4内核
 
 on: 
-# Release 发布触发
-  release:
-    types: [published]
+  repository_dispatch:
+  workflow_dispatch:
+    inputs:
+      ssh:
+        description: 'SSH connection to Actions'
+        required: false
+        default: 'false'
 
 # 定时触发    
   schedule:
@@ -115,6 +119,13 @@ jobs:
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
 
+   - name: 设置缓存
+      uses: klever1988/cachewrtbuild@main
+      with:
+        ccache: 'true'
+        prefix: ${{ github.workspace }}/openwrt
+
+
     - name: 编译固件
       working-directory: ./openwrt
       run: |
@@ -182,7 +193,7 @@ jobs:
     - name: 删除工作流
       uses: GitRML/delete-workflow-runs@main
       with:
-        retain_days: 3
+        retain_days: 2
         keep_minimum_runs: 0
 
     - name: 删除旧版本
