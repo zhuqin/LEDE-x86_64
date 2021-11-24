@@ -4,12 +4,16 @@
 # Author: kenzo
 #=================================================
 
-name: Lean_5.4内核
+name: Lean_5.10内核
 
 on: 
-# Release 发布触发
-  release:
-    types: [published]
+  repository_dispatch:
+  workflow_dispatch:
+    inputs:
+      ssh:
+        description: 'SSH connection to Actions'
+        required: false
+        default: 'false'
 
 # 定时触发    
   schedule:
@@ -18,9 +22,14 @@ on:
 env:
   UPLOAD_BIN_DIR: false
   UPLOAD_FIRMWARE: true
-  UPLOAD_COWTRANSFER: false
-  UPLOAD_WETRANSFER: false
-  UPLOAD_RELEASE: true
+  UPLOAD_COWTRANSFER: true
+  UPLOAD_WETRANSFER: true
+  UPLOAD_RELEASE: true  
+  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+  REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+  REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
+  DOCKER_ID: ${{ secrets.DOCKER_ID }}
+  DOCKER_PASSWD: ${{ secrets.DOCKER_PASSWD }}  
   TZ: Asia/Shanghai
   
 jobs:
@@ -47,7 +56,7 @@ jobs:
     - name: 设置当前的日期
       id: date
       run: |
-        echo "date1=$(date +'%m/%d_%Y_%H/%M')" >> $GITHUB_ENV
+        echo "date=$(date +'%Y.%m.%d-%H%M')" >> $GITHUB_ENV
         echo "date2=$(date +'%m/%d %Y')" >> $GITHUB_ENV
         echo "date3=$(date +'%m.%d')" >> $GITHUB_ENV
         echo "date4=$(date +'%m.%d.%Y')" >> $GITHUB_ENV
@@ -94,7 +103,6 @@ jobs:
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
 
-
     - name: 编译固件
       working-directory: ./openwrt
       run: |
@@ -122,13 +130,26 @@ jobs:
         -or -name "*sysupgrade*" \
         -or -name "sha256sums" \
         | xargs -i mv -f {} ./firmware/
-        cp openwrt/.config  ./firmware/${{matrix.target}}.config
+        cp openwrt/.config  ./firmware/Lean_5.10.config
         cd firmware
-        echo ${{ env.date4 }} > version.txt
-        mv sha256sums ${{matrix.target}}_sha256sums
+        echo "${{ env.VERSION }}.$(date +'%Y')" > version.txt
+        echo $REPO_BRANCH >> version.txt
+        rm -rf sha256sums
         rename -v "s/^openwrt/${{ env.date3 }}-Lean/" *
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
+        echo "DOCKERTAG=${{ secrets.DOCKER_ID }}/openwrt-4p:latest" >> $GITHUB_ENV
         echo "::set-output name=status::success"
+        
+    - name: 部署文件到服务器
+      uses: easingthemes/ssh-deploy@main
+      with:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        ARGS: "-avzr --exclude="
+        SOURCE: firmware/
+        REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+        REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
+        REMOTE_USER: root
+        TARGET: "/www/wwwroot/${{ secrets.REMOTE_HOST }}/op/firmware/${{matrix.target}}/"
       
     - name: 上传固件目录
       uses: actions/upload-artifact@main
@@ -137,11 +158,53 @@ jobs:
         name: ${{ env.date3 }} _Lean
         path: ${{ env.FIRMWARE }}
 
+    - name: 设置Docker编译信息
+      uses: docker/setup-buildx-action@master
+      if: env.DOCKER_ID && env.DOCKER_PASSWD
+
+    - name: 登录DockerHub
+      uses: docker/login-action@master
+      if: env.DOCKER_ID && env.DOCKER_PASSWD
+      with:
+        username: ${{ secrets.DOCKER_ID }}
+        password: ${{ secrets.DOCKER_PASSWD }}
+        
+    - name: 编译docker镜像
+      uses: docker/build-push-action@master
+      continue-on-error: true
+      if: env.DOCKER_ID && env.DOCKER_PASSWD
+      with:
+        platforms: ${{ env.ARCH }}
+        file: Dockerfile
+        context: .
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_ID }}/openwrt-nginx:Lean_5.10
+          ${{ env.DOCKERTAG }}         
+
+    - name: 上传固件cowtransfer
+      id: cowtransfer
+      if: steps.organize.outputs.status == 'success' && env.UPLOAD_COWTRANSFER == 'true' && !cancelled()
+      run: |
+        curl -fsSL git.io/file-transfer | sh
+        ./transfer cow --block 2621440 -s -p 64 --no-progress ${FIRMWARE} 2>&1 | tee cowtransfer.log
+        echo "::warning file=cowtransfer.com::$(cat cowtransfer.log | grep https)"
+        echo "::set-output name=url::$(cat cowtransfer.log | grep https | cut -f3 -d" ")"
+
+    - name: 上传固件WeTransfer
+      id: wetransfer
+      if: steps.organize.outputs.status == 'success' && env.UPLOAD_WETRANSFER == 'true' && !cancelled()
+      run: |
+        curl -fsSL git.io/file-transfer | sh
+        ./transfer wet -s -p 16 --no-progress ${FIRMWARE} 2>&1 | tee wetransfer.log
+        echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
+        echo "::set-output name=url::$(cat wetransfer.log | grep https | cut -f3 -d" ")"
+
     - name: 生成发布标签
       id: tag
       if: env.UPLOAD_RELEASE == 'true' && !cancelled()
       run: |
-        echo "::set-output name=release_tag::${{ env.date1 }}"
+        echo "::set-output name=release_tag::$(date +"%Y.%m.%d-%H%M")"
         touch release.txt
         [ $UPLOAD_COWTRANSFER = true ] && echo "🔗 [Cowtransfer](${{ steps.cowtransfer.outputs.url }})" >> release.txt
         [ $UPLOAD_WETRANSFER = true ] && echo "🔗 [WeTransfer](${{ steps.wetransfer.outputs.url }})" >> release.txt
@@ -155,7 +218,7 @@ jobs:
       with:
         files: "${{ env.FIRMWARE }}/*"
         name: ${{ env.date2 }} ${{matrix.target}}
-        tag_name: ${{ env.date3 }}_${{matrix.target}}
+        tag_name: ${{ env.date }} ${{matrix.target}}
         body_path: release.txt
 
     - name: 删除工作流
@@ -171,4 +234,4 @@ jobs:
         keep_latest: 2
         delete_tags: true
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+        GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }} 
