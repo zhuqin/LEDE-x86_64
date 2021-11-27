@@ -22,8 +22,8 @@ on:
 env:
   UPLOAD_BIN_DIR: false
   UPLOAD_FIRMWARE: true
-  UPLOAD_COWTRANSFER: true
-  UPLOAD_WETRANSFER: true
+  UPLOAD_COWTRANSFER: false
+  UPLOAD_WETRANSFER: false
   UPLOAD_RELEASE: true  
   SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
   REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
@@ -138,10 +138,10 @@ jobs:
         | xargs -i mv -f {} ./firmware/
         cp openwrt/.config  ./firmware/Lean_5.10.config
         cd firmware
-        echo "${{ env.VERSION }}.$(date +'%Y')" > version.txt
-        echo $REPO_BRANCH >> version.txt
+        echo "${{ env.VERSION }}.${{ env.date4 }}" > version.txt
+        echo "${{ secrets.DOCKER_ID }}" >> version.txt
         rm -rf sha256sums
-        rename -v "s/^openwrt/${{ env.date3 }}-Lean/" *
+        rename -v "s/^openwrt/${{ env.date3 }}_Lean/" *
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "DOCKERTAG=${{ secrets.DOCKER_ID }}/openwrt-4p:latest" >> $GITHUB_ENV
         echo "::set-output name=status::success"
@@ -155,7 +155,7 @@ jobs:
         REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
         REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
         REMOTE_USER: root
-        TARGET: "/www/wwwroot/${{ secrets.REMOTE_HOST }}/op/firmware/${{matrix.target}}/"
+        TARGET: "/www/wwwroot/${{ secrets.REMOTE_HOST }}/op/firmware/Lean/"
       
     - name: 上传固件目录
       uses: actions/upload-artifact@main
@@ -185,7 +185,7 @@ jobs:
         context: .
         push: true
         tags: |
-          ${{ secrets.DOCKER_ID }}/openwrt-nginx:Lean_5.10
+          ${{ secrets.DOCKER_ID }}/openwrt-4p:Lean_5.10
           ${{ env.DOCKERTAG }}         
 
     - name: 上传固件cowtransfer
@@ -210,7 +210,8 @@ jobs:
       id: tag
       if: env.UPLOAD_RELEASE == 'true' && !cancelled()
       run: |
-        echo "::set-output name=release_tag::$(date +"%Y.%m.%d-%H%M")"
+        echo -e "墙内外加速下载 🎈:\n" >> release.txt
+        echo -e "[kenzo] (https://op.dllkids.xyz/op/)\n" >> release.txt
         touch release.txt
         [ $UPLOAD_COWTRANSFER = true ] && echo "🔗 [Cowtransfer](${{ steps.cowtransfer.outputs.url }})" >> release.txt
         [ $UPLOAD_WETRANSFER = true ] && echo "🔗 [WeTransfer](${{ steps.wetransfer.outputs.url }})" >> release.txt
@@ -230,14 +231,14 @@ jobs:
     - name: 删除工作流
       uses: GitRML/delete-workflow-runs@main
       with:
-        retain_days: 3
+        retain_days: 1
         keep_minimum_runs: 0
 
     - name: 删除旧版本
       uses: dev-drprasad/delete-older-releases@v0.1.0
       if: env.UPLOAD_RELEASE == 'true' && !cancelled()
       with:
-        keep_latest: 2
+        keep_latest: 6
         delete_tags: true
       env:
         GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }} 
