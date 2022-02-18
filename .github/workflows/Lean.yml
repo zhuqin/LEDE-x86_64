@@ -106,7 +106,6 @@ jobs:
         cp -f package/small-package/diy/default-settings package/lean/default-settings/files/zzz-default-settings
         cp -f package/small-package/diy/banner package/base-files/files/etc/banner
         cp -f package/small-package/diy/Leandiffconfig .config
-        echo "CONFIG_PACKAGE_luci-app-jd-dailybonus=y" >> .config
         echo "CONFIG_PACKAGE_luci-app-vlmcsd=y" >> .config
         echo "CONFIG_PACKAGE_luci-app-unblockmusic=y" >> .config
         make defconfig
@@ -123,13 +122,6 @@ jobs:
     - name: 编译固件
       working-directory: ./openwrt
       run: |
-        echo '
-          CONFIG_CRYPTO_CHACHA20_X86_64=y
-          CONFIG_CRYPTO_POLY1305_X86_64=y
-          CONFIG_DRM=y
-          CONFIG_DRM_I915=y
-          ' >> ./target/linux/x86/config-5.10
-          
           echo -e "$(($(nproc)+1)) thread compile"
           make -j$(($(nproc)+1)) || make -j1 V=s
           echo "::set-output name=status::success"        
