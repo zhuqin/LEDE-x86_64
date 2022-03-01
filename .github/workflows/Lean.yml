@@ -4,7 +4,7 @@
 # Author: kenzo
 #=================================================
 
-name: Lean_5.10
+name: Lean
 
 on: 
   repository_dispatch:
