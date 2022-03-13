@@ -15,6 +15,9 @@ on:
         required: false
         default: 'false'
 
+  schedule:
+    - cron: 0 20 * * *
+    
 env:
   UPLOAD_BIN_DIR: false
   UPLOAD_FIRMWARE: true
