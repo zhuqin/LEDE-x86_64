@@ -15,10 +15,6 @@ on:
         required: false
         default: 'false'
 
-# 定时触发    
-schedule:
-  - cron: 0 20 * * *
-
 env:
   UPLOAD_BIN_DIR: false
   UPLOAD_FIRMWARE: true
