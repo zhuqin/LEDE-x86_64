@@ -25,6 +25,7 @@ env:
   UPLOAD_WETRANSFER: false
   UPLOAD_RELEASE: true  
   SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+  PASSWORD: ${{ secrets.PASSWORD }}
   REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
   REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
   DOCKER_ID: ${{ secrets.DOCKER_ID }}
@@ -97,9 +98,9 @@ jobs:
         chmod +x ./customize.sh && ./customize.sh
         cd openwrt
         cp -f feeds/smpackage/diy/default-settings package/lean/default-settings/files/zzz-default-settings
-        sed -i 's/v$date1/May/g' package/lean/default-settings/files/zzz-default-settings
+        sed -i 's/v$date1/June/g' package/lean/default-settings/files/zzz-default-settings
         cp -f feeds/smpackage/diy/banner package/base-files/files/etc/banner
-        sed -i 's/%D %V, %C/openwrt May by kenzo/g' package/base-files/files/etc/banner
+        sed -i 's/%D %V, %C/openwrt June by kenzo/g' package/base-files/files/etc/banner
         cp -f feeds/smpackage/diy/index_x86.htm package/lean/autocore/files/x86/index.htm
         patch -p1 < "feeds/smpackage/diy/patches/prereq-build_new.patch"
         cp -f feeds/smpackage/diy/${{matrix.target}}.config .config
@@ -160,30 +161,6 @@ jobs:
         REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
         REMOTE_USER: root
         TARGET: "/www/wwwroot/${{ secrets.REMOTE_HOST }}/op/firmware/${{matrix.target}}/"
-      
-    - name: Deploy some packages to server
-      uses: easingthemes/ssh-deploy@main
-      if: env.SSH_PRIVATE_KEY && ! contains(github.event.action, 'noser')
-      with:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        ARGS: "-avzr"
-        SOURCE: openwrt/bin/packages/*/base/*-firmware*
-        REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-        REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
-        REMOTE_USER: root
-        TARGET: "/www/wwwroot/${{ secrets.REMOTE_HOST }}/packages/${{matrix.target}}/"
-
-    - name: remote ssh command
-      uses: appleboy/ssh-action@master
-      if: env.SSH_PRIVATE_KEY && ! contains(github.event.action, 'noser')
-      with:
-        host: ${{ secrets.REMOTE_HOST }}
-        port: ${{ secrets.REMOTE_PORT }}
-        username: root
-        key: ${{ env.SSH_PRIVATE_KEY }}
-        script: |
-          cd /www/wwwroot/${{ secrets.REMOTE_HOST }}/packages/${{matrix.target}}/
-          opkg &
 
     - name: 上传固件目录
       uses: actions/upload-artifact@main
