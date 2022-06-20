@@ -102,7 +102,6 @@ jobs:
         cp -f feeds/smpackage/diy/banner package/base-files/files/etc/banner
         sed -i 's/%D %V, %C/openwrt June by kenzo/g' package/base-files/files/etc/banner
         cp -f feeds/smpackage/diy/index_x86.htm package/lean/autocore/files/x86/index.htm
-        patch -p1 < "feeds/smpackage/diy/patches/prereq-build_new.patch"
         cp -f feeds/smpackage/diy/${{matrix.target}}.config .config
         echo "CONFIG_PACKAGE_luci-app-vlmcsd=y" >> .config
         echo "CONFIG_PACKAGE_luci-app-unblockmusic=y" >> .config
