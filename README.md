@@ -30,16 +30,6 @@
 [![P3TERX](https://img.shields.io/badge/Actions-P3TERX-success.svg?style=flat&logo=appveyor)](https://github.com/P3TERX/Actions-OpenWrt)
 
 
-##### 固件下载链接
-
-- [Lienol5.10内核固件地址](https://github.com/kenzok8/openwrt_Build/actions?query=workflow%3ALienol_5.10内核)
-- [Lean_5.10内核 固件地址](https://github.com/kenzok8/openwrt_Build/actions?query=workflow%3ALean_5.10内核)
-- [immortalwrt-21.02固件](https://github.com/kenzok8/openwrt_Build/actions?query=workflow%3Aopenwrt_21.02)
-- [immortalwrt-18.06固件](https://github.com/kenzok8/openwrt_Build/actions?query=workflow%3Aopenwrt_18.06)
-- [NanoPi_R2S__固件下载](https://github.com/kenzok8/openwrt_Build/actions?query=workflow%3ANanoPi_R2S)
-- [NanoPi_R4S__固件下载](https://github.com/kenzok8/openwrt_Build/actions?query=workflow%3ANanoPi_R4S)
-
-
 + 默认多个主题
 + 默认管理 IP: 192.168.1.252, 用户名 root，密码 password
 
