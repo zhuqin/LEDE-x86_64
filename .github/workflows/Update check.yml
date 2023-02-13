@@ -53,10 +53,9 @@ jobs:
     - name: 设置当前的日期
       id: date
       run: |
-        echo "date=$(date +'%Y.%m.%d-%H%M')" >> $GITHUB_ENV
+        echo "date=$(date +'%m/%d_%Y_%H/%M')" >> $GITHUB_ENV
         echo "date2=$(date +'%m/%d %Y')" >> $GITHUB_ENV
-        echo "date3=$(date +'%m.%d')" >> $GITHUB_ENV
-        echo "date4=$(date +'%m.%d.%H')" >> $GITHUB_ENV        
+        echo "date3=$(date +'%m.%d')" >> $GITHUB_ENV   
         sudo timedatectl set-timezone "$TZ"
 
     - name: 触发编译
@@ -64,7 +63,7 @@ jobs:
       uses: peter-evans/repository-dispatch@main
       with:
         token: ${{ secrets.REPO_TOKEN }}
-        event-type: ${{ env.date3 }} ${{ github.event.inputs.version }}
+        event-type: ${{ env.date }} ${{ github.event.inputs.version }}
  
     - name: 删除工作流
       uses: Mattraks/delete-workflow-runs@main
