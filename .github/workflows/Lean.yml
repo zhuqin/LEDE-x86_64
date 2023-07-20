@@ -54,6 +54,7 @@ jobs:
         sudo -E apt-get -qq purge azure-cli* docker* ghc* zulu* hhvm llvm* firefox powershell openjdk* dotnet* google* mysql* php* android* mongodb* moby* snap*
         sudo swapoff -a
         sudo rm -f /swapfile
+        docker rmi `docker images -q`
         sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/powershell /usr/share/swift /usr/local/.ghcup /usr/lib/jvm
         sudo -E apt-get -qq autoremove --purge
         sudo -E apt-get -qq clean ) &
