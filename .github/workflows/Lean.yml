@@ -108,8 +108,6 @@ jobs:
         sed -i 's/luci-theme-bootstrap/luci-theme-argone/g' feeds/luci/collections/luci/Makefile
         ./scripts/feeds update -a && ./scripts/feeds install -a
         cp -f feeds/smpackage/.github/diy/${{matrix.target}}.config .config
-        echo "CONFIG_PACKAGE_luci-app-vlmcsd=y" >> .config
-        echo "CONFIG_PACKAGE_luci-app-passwall2=y" >> .config
         make defconfig
         
     - name: Download package
