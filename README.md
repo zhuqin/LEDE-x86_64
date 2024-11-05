@@ -51,11 +51,11 @@
 
 ### 默认插件包含:
 
-+ adguardhome
-+ alist
 + Mosdns
 + openclash
-+ SSR Plus 
++ SSR Plus
++ homeproxy
++ mihomo
 + 动态DDNS
 + UPNP 自动端口转发
 + 默认多个主题
